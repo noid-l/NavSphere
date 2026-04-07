@@ -1,0 +1,10 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+[mcp]
+remote_mcp_client_enabled = true
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=rtdlmskfpoxxmzezbrtk"
+
+[mcp_servers.supabase.tools.apply_migration]
+approval_mode = "approve"
