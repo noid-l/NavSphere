@@ -1,17 +1,17 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import { supabaseAnonKey, supabaseUrl } from '@/lib/env'
+import { supabasePublishableKey, supabaseUrl } from '@/lib/env'
 import type { Database } from '@/lib/supabase/types'
 
 export async function createServerSupabaseClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error('Supabase env is missing.')
   }
 
   const cookieStore = await cookies()
 
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createServerClient<Database>(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll()
@@ -28,4 +28,3 @@ export async function createServerSupabaseClient() {
     },
   })
 }
-

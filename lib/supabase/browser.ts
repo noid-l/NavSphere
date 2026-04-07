@@ -2,20 +2,19 @@
 
 import { createBrowserClient } from '@supabase/ssr'
 
-import { supabaseAnonKey, supabaseUrl } from '@/lib/env'
+import { supabasePublishableKey, supabaseUrl } from '@/lib/env'
 import type { Database } from '@/lib/supabase/types'
 
 let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
 
 export function createOptionalBrowserSupabaseClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabasePublishableKey) {
     return null
   }
 
   if (!browserClient) {
-    browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+    browserClient = createBrowserClient<Database>(supabaseUrl, supabasePublishableKey)
   }
 
   return browserClient
 }
-
