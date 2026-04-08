@@ -15,7 +15,10 @@
       "mcp__plugin_playwright_playwright__browser_snapshot",
       "mcp__plugin_playwright_playwright__browser_press_key",
       "mcp__plugin_playwright_playwright__browser_type",
-      "mcp__plugin_playwright_playwright__browser_wait_for"
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "Bash(npx next:*)",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "Bash(pkill -f \"next dev --port 3456\")"
     ]
   }
 }
