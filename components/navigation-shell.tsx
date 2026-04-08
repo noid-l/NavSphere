@@ -13,7 +13,7 @@ import {
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import type { NavigationSnapshot } from "@/lib/types";
 
-import { AiImportPanel } from "./panels/ai-import-panel";
+import { DataImportPanel } from "./panels/data-import-panel";
 import { AuthPanel } from "./panels/auth-panel";
 import { SearchBar } from "./search-bar";
 import { CategoryList } from "./sections/category-list";
@@ -130,7 +130,7 @@ export function NavigationShell({
               type="button"
               onClick={() => setActiveDrawer("import")}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
-              title="AI 导入"
+              title="导入数据"
             >
               <svg
                 width="15"
@@ -202,7 +202,7 @@ export function NavigationShell({
           <div className="slide-in-right fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
               <h2 className="text-sm font-semibold">
-                {activeDrawer === "auth" ? "账户" : "AI 导入"}
+                {activeDrawer === "auth" ? "账户" : "导入数据"}
               </h2>
               <button
                 type="button"
@@ -231,7 +231,7 @@ export function NavigationShell({
                   isConfigured={snapshot.isConfigured}
                 />
               ) : (
-                <AiImportPanel
+                <DataImportPanel
                   initialUserEmail={initialUserEmail}
                   isConfigured={snapshot.isConfigured}
                 />

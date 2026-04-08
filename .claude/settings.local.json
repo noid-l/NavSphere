@@ -18,7 +18,9 @@
       "mcp__plugin_playwright_playwright__browser_wait_for",
       "Bash(npx next:*)",
       "mcp__plugin_playwright_playwright__browser_resize",
-      "Bash(pkill -f \"next dev --port 3456\")"
+      "Bash(pkill -f \"next dev --port 3456\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3456/)",
+      "mcp__plugin_playwright_playwright__browser_close"
     ]
   }
 }
