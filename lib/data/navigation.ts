@@ -1,4 +1,3 @@
-import { sampleSnapshot } from '@/lib/sample-data'
 import { hasSupabaseEnv } from '@/lib/env'
 import type { NavigationSnapshot } from '@/lib/types'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
@@ -25,7 +24,14 @@ type LinkQueryRow = {
 
 export async function getNavigationSnapshot(): Promise<NavigationSnapshot> {
   if (!hasSupabaseEnv) {
-    return sampleSnapshot
+    return {
+      groups: [],
+      totalCategories: 0,
+      totalLinks: 0,
+      isConfigured: false,
+      source: 'error',
+      errorMessage: 'Supabase 环境变量缺失，当前无法读取导航数据。',
+    }
   }
 
   try {
@@ -51,17 +57,12 @@ export async function getNavigationSnapshot(): Promise<NavigationSnapshot> {
       throw linksError
     }
 
-    const snapshot = buildSnapshot(categories ?? [], links ?? [])
-
-    // Fall back to sample data when Supabase tables are empty
-    if (snapshot.groups.length === 0) {
-      return { ...sampleSnapshot, isConfigured: true, source: 'supabase' }
-    }
-
-    return snapshot
+    return buildSnapshot(categories ?? [], links ?? [])
   } catch (error) {
     return {
-      ...sampleSnapshot,
+      groups: [],
+      totalCategories: 0,
+      totalLinks: 0,
       isConfigured: true,
       source: 'error',
       errorMessage: error instanceof Error ? error.message : '未知错误',

@@ -179,9 +179,10 @@ export function NavigationShell({
 
       {/* ── main content ── */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {snapshot.source === "sample" && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-[var(--amber-soft)] px-4 py-3 text-sm text-amber-800">
-            当前为演示模式 · 配置 Supabase 后可使用真实数据
+        {snapshot.source === "error" && (
+          <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            当前无法从 Supabase 读取导航数据。
+            {snapshot.errorMessage ? ` ${snapshot.errorMessage}` : ""}
           </div>
         )}
 

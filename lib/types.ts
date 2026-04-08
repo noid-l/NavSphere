@@ -30,7 +30,7 @@ export type NavigationSnapshot = {
   totalCategories: number
   totalLinks: number
   isConfigured: boolean
-  source: 'sample' | 'supabase' | 'error'
+  source: 'supabase' | 'error'
   errorMessage?: string
 }
 

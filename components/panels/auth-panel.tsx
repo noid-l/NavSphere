@@ -40,7 +40,7 @@ export function AuthPanel({ initialUserEmail, isConfigured }: AuthPanelProps) {
     <div className="space-y-4">
       {!isConfigured && (
         <p className="text-sm text-[var(--ink-secondary)]">
-          当前为演示模式。配置 Supabase 与 GitHub Provider 后可启用登录。
+          当前未配置 Supabase。请先补齐环境变量并启用 GitHub Provider。
         </p>
       )}
 

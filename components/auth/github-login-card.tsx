@@ -106,7 +106,7 @@ export function GitHubLoginCard({
 
         {!isConfigured && (
           <p className="text-sm text-amber-700">
-            当前还是演示模式。请先配置 `.env.local` 和 Supabase GitHub Provider。
+            当前未配置 Supabase。请先配置 `.env.local` 和 Supabase GitHub Provider。
           </p>
         )}
 

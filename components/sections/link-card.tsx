@@ -52,7 +52,7 @@ export function LinkCard({ link, accent, styleDelay = 0 }: LinkCardProps) {
           <span className="truncate text-sm font-semibold">{link.name}</span>
           {/* external arrow – visible on hover */}
           <svg
-            className="shrink-0 text-[var(--ink-tertiary)] opacity-0 transition-opacity group-hover:opacity-100"
+            className="shrink-0 text-(--ink-tertiary) opacity-0 transition-opacity group-hover:opacity-100"
             width="11"
             height="11"
             viewBox="0 0 24 24"

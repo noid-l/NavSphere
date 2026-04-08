@@ -9,7 +9,7 @@
 - GitHub 登录入口（通过 Supabase Auth）
 - Supabase RLS 权限控制
 - `POST /api/ai-import` 支持 AI JSON 直接导入
-- 未配置 Supabase 时自动回落到 Demo 数据
+- 数据来源仅限 Supabase，未配置或查询失败时直接报错
 
 ## 快速开始
 
