@@ -16,6 +16,7 @@ import type { NavigationSnapshot } from "@/lib/types";
 import { DataImportPanel } from "./panels/data-import-panel";
 import { AuthPanel } from "./panels/auth-panel";
 import { SearchBar } from "./search-bar";
+import { CategorySidebar } from "./sections/category-sidebar";
 import { CategoryList } from "./sections/category-list";
 
 type NavigationShellProps = {
@@ -39,27 +40,15 @@ export function NavigationShell({
   const [activeDrawer, setActiveDrawer] = useState<
     "auth" | "import" | null
   >(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
+    null,
+  );
+  const [mobileSidebar, setMobileSidebar] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const debouncedQuery = useDebouncedValue(query, 300);
   const deferredQuery = useDeferredValue(debouncedQuery);
   const keyword = normalizeKeyword(deferredQuery);
-
-  // ⌘K → focus search, Esc → close drawer
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-      if (e.key === "Escape") {
-        setActiveDrawer(null);
-        searchRef.current?.blur();
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   const filteredGroups = !keyword
     ? snapshot.groups
@@ -87,11 +76,85 @@ export function NavigationShell({
     0,
   );
 
+  const hasSidebar = snapshot.groups.length > 1;
+
+  // ⌘K → focus search, Esc → close drawer/sidebar
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (e.key === "Escape") {
+        setActiveDrawer(null);
+        setMobileSidebar(false);
+        searchRef.current?.blur();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // IntersectionObserver — track which category section is visible
+  useEffect(() => {
+    if (!hasSidebar) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveCategoryId(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+    );
+
+    const sections = document.querySelectorAll(
+      "section[id]",
+    ) as NodeListOf<HTMLElement>;
+    for (const section of sections) {
+      observer.observe(section);
+    }
+
+    return () => observer.disconnect();
+  }, [hasSidebar, filteredGroups]);
+
+  function handleSidebarNavigate(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileSidebar(false);
+  }
+
   return (
     <>
       {/* ── sticky header ── */}
       <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+          {/* mobile sidebar toggle */}
+          {hasSidebar && (
+            <button
+              type="button"
+              onClick={() => setMobileSidebar(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)] lg:hidden"
+              title="分类导航"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          )}
+
           {/* logo */}
           <div className="flex shrink-0 items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)] text-xs font-bold text-white">
@@ -125,28 +188,30 @@ export function NavigationShell({
               链接
             </span>
 
-            {/* import */}
-            <button
-              type="button"
-              onClick={() => setActiveDrawer("import")}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
-              title="导入数据"
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            {/* import — only shown for logged-in users */}
+            {initialUserEmail && (
+              <button
+                type="button"
+                onClick={() => setActiveDrawer("import")}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
+                title="导入数据"
               >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-            </button>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              </button>
+            )}
 
             {/* auth */}
             <button
@@ -177,17 +242,72 @@ export function NavigationShell({
         </div>
       </header>
 
-      {/* ── main content ── */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {snapshot.source === "error" && (
-          <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-            当前无法从 Supabase 读取导航数据。
-            {snapshot.errorMessage ? ` ${snapshot.errorMessage}` : ""}
-          </div>
-        )}
+      {/* ── body: sidebar + main ── */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex gap-0 lg:gap-8">
+          {/* desktop sidebar */}
+          {hasSidebar && (
+            <aside className="hidden w-52 shrink-0 lg:block">
+              <CategorySidebar
+                groups={snapshot.groups}
+                activeId={activeCategoryId}
+                onNavigate={handleSidebarNavigate}
+              />
+            </aside>
+          )}
 
-        <CategoryList groups={filteredGroups} keyword={keyword} />
-      </main>
+          {/* main content */}
+          <main className="min-w-0 flex-1 py-8">
+            {snapshot.source === "error" && (
+              <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                当前无法从 Supabase 读取导航数据。
+                {snapshot.errorMessage ? ` ${snapshot.errorMessage}` : ""}
+              </div>
+            )}
+
+            <CategoryList groups={filteredGroups} keyword={keyword} />
+          </main>
+        </div>
+      </div>
+
+      {/* ── mobile sidebar overlay ── */}
+      {mobileSidebar && (
+        <>
+          <div
+            className="cat-sidebar-overlay"
+            onClick={() => setMobileSidebar(false)}
+          />
+          <div className="cat-sidebar-mobile">
+            <div className="cat-sidebar-mobile-header">
+              <span className="cat-sidebar-mobile-title">分类导航</span>
+              <button
+                type="button"
+                onClick={() => setMobileSidebar(false)}
+                className="cat-sidebar-mobile-close"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <CategorySidebar
+              groups={snapshot.groups}
+              activeId={activeCategoryId}
+              onNavigate={handleSidebarNavigate}
+            />
+          </div>
+        </>
+      )}
 
       {/* ── drawer overlay ── */}
       {activeDrawer && (

@@ -41,7 +41,7 @@ export function CategoryList({ groups, keyword }: CategoryListProps) {
         const accent = ACCENT_PALETTE[groupIndex % ACCENT_PALETTE.length];
 
         return (
-          <section key={group.category.id}>
+          <section key={group.category.id} id={group.category.id}>
             {/* category header */}
             <div className="mb-4 flex items-center gap-3">
               <div
