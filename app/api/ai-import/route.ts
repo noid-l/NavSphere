@@ -34,14 +34,20 @@ async function importCategory(
     }
   }
 
-  const rows = payload.links.map((link, index) => ({
-    name: link.name.trim(),
-    url: link.url.trim(),
-    env: link.env ?? 'prod',
-    description: link.description?.trim() || null,
-    icon: link.icon?.trim() || null,
-    sort: link.sort ?? (index + 1) * 10,
-    is_public: link.is_public ?? false,
+  const seen = new Map<string, number>()
+
+  payload.links.forEach((link, index) => {
+    seen.set(link.name.trim(), index)
+  })
+
+  const rows = [...seen.values()].map((index) => ({
+    name: payload.links[index].name.trim(),
+    url: payload.links[index].url.trim(),
+    env: payload.links[index].env ?? 'prod',
+    description: payload.links[index].description?.trim() || null,
+    icon: payload.links[index].icon?.trim() || null,
+    sort: payload.links[index].sort ?? (index + 1) * 10,
+    is_public: payload.links[index].is_public ?? false,
     category_id: category.id,
     created_by: userId,
   }))
