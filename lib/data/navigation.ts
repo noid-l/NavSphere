@@ -51,7 +51,14 @@ export async function getNavigationSnapshot(): Promise<NavigationSnapshot> {
       throw linksError
     }
 
-    return buildSnapshot(categories ?? [], links ?? [])
+    const snapshot = buildSnapshot(categories ?? [], links ?? [])
+
+    // Fall back to sample data when Supabase tables are empty
+    if (snapshot.groups.length === 0) {
+      return { ...sampleSnapshot, isConfigured: true, source: 'supabase' }
+    }
+
+    return snapshot
   } catch (error) {
     return {
       ...sampleSnapshot,

@@ -1,33 +1,65 @@
-'use client'
+"use client";
 
-import { useDeferredValue, useState, useTransition } from 'react'
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import {
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
-import { useDebouncedValue } from '@/lib/hooks/use-debounced-value'
-import type { NavigationSnapshot } from '@/lib/types'
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import type { NavigationSnapshot } from "@/lib/types";
 
-import { AiImportPanel } from './panels/ai-import-panel'
-import { AuthPanel } from './panels/auth-panel'
-import { SearchBar } from './search-bar'
-import { CategoryList } from './sections/category-list'
+import { AiImportPanel } from "./panels/ai-import-panel";
+import { AuthPanel } from "./panels/auth-panel";
+import { SearchBar } from "./search-bar";
+import { CategoryList } from "./sections/category-list";
 
 type NavigationShellProps = {
-  snapshot: NavigationSnapshot
-  initialUserEmail: string | null
-}
+  snapshot: NavigationSnapshot;
+  initialUserEmail: string | null;
+};
+
+const loginRoute = "/login" as Route;
 
 function normalizeKeyword(value: string) {
-  return value.trim().toLowerCase()
+  return value.trim().toLowerCase();
 }
 
 export function NavigationShell({
   snapshot,
   initialUserEmail,
 }: NavigationShellProps) {
-  const [query, setQuery] = useState('')
-  const [isPending, startTransition] = useTransition()
-  const debouncedQuery = useDebouncedValue(query, 300)
-  const deferredQuery = useDeferredValue(debouncedQuery)
-  const keyword = normalizeKeyword(deferredQuery)
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [activeDrawer, setActiveDrawer] = useState<
+    "auth" | "import" | null
+  >(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const debouncedQuery = useDebouncedValue(query, 300);
+  const deferredQuery = useDeferredValue(debouncedQuery);
+  const keyword = normalizeKeyword(deferredQuery);
+
+  // ⌘K → focus search, Esc → close drawer
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (e.key === "Escape") {
+        setActiveDrawer(null);
+        searchRef.current?.blur();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const filteredGroups = !keyword
     ? snapshot.groups
@@ -37,129 +69,176 @@ export function NavigationShell({
           links: group.links.filter((link) => {
             const haystack = [
               group.category.name,
-              group.category.description ?? '',
+              group.category.description ?? "",
               link.name,
-              link.description ?? '',
+              link.description ?? "",
               link.url,
             ]
-              .join(' ')
-              .toLowerCase()
+              .join(" ")
+              .toLowerCase();
 
-            return haystack.includes(keyword)
+            return haystack.includes(keyword);
           }),
         }))
-        .filter((group) => group.links.length > 0)
+        .filter((group) => group.links.length > 0);
 
   const totalVisibleLinks = filteredGroups.reduce(
     (total, group) => total + group.links.length,
     0,
-  )
+  );
 
   return (
-    <main className="relative overflow-hidden px-4 py-6 sm:px-6 lg:px-10">
-      <div className="pointer-events-none absolute inset-0 grid-fade" />
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <section className="surface-card relative overflow-hidden rounded-[2rem] px-6 py-8 sm:px-8 sm:py-10">
-          <div className="absolute inset-y-0 right-0 hidden w-80 bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.16),transparent_68%)] lg:block" />
-          <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--page-line)] bg-[var(--page-surface-strong)] px-3 py-1 text-xs font-medium uppercase tracking-[0.28em] text-[var(--page-muted)]">
-                Dev Navigation OS
-              </div>
-              <div className="space-y-4">
-                <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">
-                  把项目入口、开发工具和 AI 工作台整理成一个可被人和模型同时使用的导航层。
-                </h1>
-                <p className="max-w-2xl text-balance text-sm leading-7 text-[var(--page-muted)] sm:text-base">
-                  NavSphere 以 Next.js 驱动前端，以 Supabase 承担数据、认证与权限控制。
-                  现在就能搜索、分类浏览，并通过 AI JSON 一键写入导航数据。
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <StatCard label="分类数" value={String(snapshot.totalCategories)} />
-                <StatCard label="链接数" value={String(snapshot.totalLinks)} />
-                <StatCard
-                  label="数据源"
-                  value={snapshot.source === 'supabase' ? 'Supabase' : 'Demo'}
-                />
-              </div>
+    <>
+      {/* ── sticky header ── */}
+      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+          {/* logo */}
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)] text-xs font-bold text-white">
+              N
             </div>
-            <div className="flex flex-col gap-4">
-              <AuthPanel
-                initialUserEmail={initialUserEmail}
-                isConfigured={snapshot.isConfigured}
-              />
-              <div className="rounded-[1.5rem] border border-[var(--page-line)] bg-[rgba(255,255,255,0.7)] p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--page-muted)]">当前状态</p>
-                    <p className="mt-1 text-lg font-semibold">
-                      {snapshot.isConfigured ? 'Supabase 已接入' : '演示模式'}
-                    </p>
-                  </div>
-                  <div className="rounded-full bg-[var(--page-brand-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--page-brand)]">
-                    {snapshot.isConfigured ? 'Live Data' : 'Starter Mode'}
-                  </div>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-[var(--page-muted)]">
-                  {!snapshot.isConfigured
-                    ? '填入 `.env.local` 中的 Supabase 地址与匿名 Key 后，页面会切换为真实数据读取。'
-                    : '匿名访问只会看到公开数据，登录后可读取和维护自己的私有导航。'}
-                </p>
-              </div>
-            </div>
+            <span className="text-[15px] font-bold tracking-tight">
+              NavSphere
+            </span>
           </div>
-        </section>
 
-        <section className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
-          <div className="space-y-5">
+          {/* search */}
+          <div className="mx-auto w-full max-w-lg">
             <SearchBar
+              ref={searchRef}
               query={query}
               isPending={isPending}
-              totalVisibleLinks={totalVisibleLinks}
-              onQueryChange={(nextQuery) => {
-                startTransition(() => {
-                  setQuery(nextQuery)
-                })
-              }}
+              onQueryChange={(v) => startTransition(() => setQuery(v))}
             />
-            <CategoryList groups={filteredGroups} keyword={keyword} />
           </div>
-          <div className="space-y-5">
-            <AiImportPanel
-              isConfigured={snapshot.isConfigured}
-              initialUserEmail={initialUserEmail}
-            />
-            <aside className="surface-card rounded-[1.75rem] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--page-muted)]">
-                工作流
-              </p>
-              <ol className="mt-4 space-y-4 text-sm leading-6 text-[var(--page-muted)]">
-                <li>
-                  1. AI 产出固定 JSON。
-                </li>
-                <li>
-                  2. 前端或 `POST /api/ai-import` 提交给 Supabase。
-                </li>
-                <li>
-                  3. RLS 控制可见范围，页面刷新后立刻生效。
-                </li>
-              </ol>
-            </aside>
-          </div>
-        </section>
-      </div>
-    </main>
-  )
-}
 
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[1.35rem] border border-[var(--page-line)] bg-[rgba(255,255,255,0.72)] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--page-muted)]">
-        {label}
-      </p>
-      <p className="mt-3 text-3xl font-semibold tracking-[-0.05em]">{value}</p>
-    </div>
-  )
+          {/* right actions */}
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="hidden items-center gap-1 text-[11px] text-[var(--ink-tertiary)] sm:flex">
+              <span className="font-medium text-[var(--ink-secondary)]">
+                {snapshot.totalCategories}
+              </span>{" "}
+              分类 ·{" "}
+              <span className="font-medium text-[var(--ink-secondary)]">
+                {totalVisibleLinks}
+              </span>{" "}
+              链接
+            </span>
+
+            {/* import */}
+            <button
+              type="button"
+              onClick={() => setActiveDrawer("import")}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
+              title="AI 导入"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </button>
+
+            {/* auth */}
+            <button
+              type="button"
+              onClick={() => {
+                if (initialUserEmail) {
+                  setActiveDrawer("auth");
+                  return;
+                }
+
+                router.push(loginRoute);
+              }}
+              className="flex h-8 items-center justify-center rounded-lg border border-[var(--border)] px-2.5 text-sm text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
+              title="账户"
+            >
+              {initialUserEmail ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--emerald)]" />
+                  <span className="hidden max-w-[100px] truncate sm:inline">
+                    {initialUserEmail}
+                  </span>
+                </span>
+              ) : (
+                "登录"
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── main content ── */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {snapshot.source === "sample" && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-[var(--amber-soft)] px-4 py-3 text-sm text-amber-800">
+            当前为演示模式 · 配置 Supabase 后可使用真实数据
+          </div>
+        )}
+
+        <CategoryList groups={filteredGroups} keyword={keyword} />
+      </main>
+
+      {/* ── drawer overlay ── */}
+      {activeDrawer && (
+        <>
+          {/* backdrop */}
+          <div
+            className="fade-in fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
+            onClick={() => setActiveDrawer(null)}
+          />
+
+          {/* panel */}
+          <div className="slide-in-right fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
+              <h2 className="text-sm font-semibold">
+                {activeDrawer === "auth" ? "账户" : "AI 导入"}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setActiveDrawer(null)}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--ink-tertiary)] transition-colors hover:bg-gray-100 hover:text-[var(--ink)]"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              {activeDrawer === "auth" ? (
+                <AuthPanel
+                  initialUserEmail={initialUserEmail}
+                  isConfigured={snapshot.isConfigured}
+                />
+              ) : (
+                <AiImportPanel
+                  initialUserEmail={initialUserEmail}
+                  isConfigured={snapshot.isConfigured}
+                />
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
 }

@@ -1,44 +1,53 @@
+"use client";
+
+import { forwardRef } from "react";
+
 type SearchBarProps = {
-  query: string
-  isPending: boolean
-  totalVisibleLinks: number
-  onQueryChange: (value: string) => void
-}
+  query: string;
+  isPending: boolean;
+  onQueryChange: (value: string) => void;
+};
 
-export function SearchBar({
-  query,
-  isPending,
-  totalVisibleLinks,
-  onQueryChange,
-}: SearchBarProps) {
-  return (
-    <section className="surface-card rounded-[1.75rem] p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--page-muted)]">
-            Search
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-            快速定位你要的入口
-          </h2>
-        </div>
-        <div className="rounded-full border border-[var(--page-line)] bg-[var(--page-surface-strong)] px-3 py-1 text-xs font-medium text-[var(--page-muted)]">
-          当前展示 {totalVisibleLinks} 个链接
-        </div>
-      </div>
-      <label className="mt-5 block">
-        <span className="sr-only">搜索导航</span>
+export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
+  function SearchBar({ query, isPending, onQueryChange }, ref) {
+    return (
+      <div className="relative">
+        {/* search icon */}
+        <svg
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-tertiary)]"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+
         <input
+          ref={ref}
+          type="text"
           value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="输入项目名、描述、地址或分类名"
-          className="w-full rounded-[1.25rem] border border-[var(--page-line)] bg-white/80 px-4 py-3 text-sm outline-none transition focus:border-[var(--page-brand)] focus:ring-4 focus:ring-[rgba(15,118,110,0.12)]"
+          onChange={(e) => onQueryChange(e.target.value)}
+          placeholder="搜索项目、工具、地址..."
+          className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-16 text-sm outline-none transition-all placeholder:text-[var(--ink-tertiary)] focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-soft)]"
         />
-      </label>
-      <p className="mt-3 text-xs text-[var(--page-muted)]">
-        支持模糊匹配。输入状态会平滑更新{isPending ? '，正在过滤...' : '。'}
-      </p>
-    </section>
-  )
-}
 
+        {/* right side: spinner or ⌘K */}
+        {isPending ? (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--accent)]" />
+          </div>
+        ) : (
+          <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden items-center rounded-md border border-[var(--border)] bg-[var(--bg)] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[var(--ink-tertiary)] sm:inline-flex">
+            ⌘K
+          </kbd>
+        )}
+      </div>
+    );
+  },
+);

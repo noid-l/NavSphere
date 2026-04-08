@@ -1,57 +1,88 @@
-import type { NavLink } from '@/lib/types'
+import type { NavLink } from "@/lib/types";
+
+type Accent = { main: string; soft: string };
 
 type LinkCardProps = {
-  link: NavLink
-  styleDelay?: number
+  link: NavLink;
+  accent: Accent;
+  styleDelay?: number;
+};
+
+const ENV_MAP = {
+  prod: { label: "生产", color: "#059669" },
+  test: { label: "测试", color: "#d97706" },
+} as const;
+
+function stripProtocol(url: string) {
+  return url.replace(/^https?:\/\//, "");
 }
 
-const envMap = {
-  prod: { label: '生产', tone: 'bg-[rgba(15,118,110,0.12)] text-[var(--page-brand)]' },
-  test: { label: '测试', tone: 'bg-[rgba(245,158,11,0.14)] text-[#a16207]' },
-} as const
-
-export function LinkCard({ link, styleDelay = 0 }: LinkCardProps) {
-  const avatarStyle = link.icon
-    ? { backgroundImage: `url(${link.icon})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : undefined
+export function LinkCard({ link, accent, styleDelay = 0 }: LinkCardProps) {
+  const env = ENV_MAP[link.env];
 
   return (
     <a
       href={link.url}
       target="_blank"
       rel="noreferrer"
-      className="link-card-enter group rounded-[1.5rem] border border-[var(--page-line)] bg-white/75 p-4 transition hover:-translate-y-0.5 hover:border-[rgba(15,118,110,0.32)] hover:bg-white"
+      className="card-enter group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 transition-all duration-200 hover:border-[var(--border-hover)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
       style={{ animationDelay: `${styleDelay}ms` }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--page-line)] bg-[var(--page-brand-soft)] text-lg font-semibold uppercase text-[var(--page-brand)]"
-            style={avatarStyle}
-          >
-            {!link.icon ? link.name.slice(0, 1) : ''}
-          </div>
-          <div>
-            <p className="text-lg font-semibold tracking-[-0.03em]">{link.name}</p>
-            <p className="mt-1 font-mono text-xs text-[var(--page-muted)]">{link.url}</p>
-          </div>
-        </div>
-        <span className="text-lg text-[var(--page-muted)] transition group-hover:translate-x-0.5">
-          ↗
-        </span>
+      {/* avatar / favicon */}
+      <div
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+        style={{
+          backgroundColor: accent.soft,
+          color: accent.main,
+          ...(link.icon
+            ? {
+                backgroundImage: `url(${link.icon})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : {}),
+        }}
+      >
+        {!link.icon ? link.name.slice(0, 1) : ""}
       </div>
-      {link.description ? (
-        <p className="mt-4 text-sm leading-6 text-[var(--page-muted)]">{link.description}</p>
-      ) : null}
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-medium">
-        <span className={`rounded-full px-2.5 py-1 ${envMap[link.env].tone}`}>
-          {envMap[link.env].label}
-        </span>
-        <span className="rounded-full border border-[var(--page-line)] px-2.5 py-1 text-[var(--page-muted)]">
-          {link.isPublic ? '公开可见' : '私有'}
-        </span>
-      </div>
-    </a>
-  )
-}
 
+      {/* text */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-semibold">{link.name}</span>
+          {/* external arrow – visible on hover */}
+          <svg
+            className="shrink-0 text-[var(--ink-tertiary)] opacity-0 transition-opacity group-hover:opacity-100"
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </div>
+        <p className="truncate font-mono text-[11px] text-[var(--ink-tertiary)]">
+          {stripProtocol(link.url)}
+        </p>
+        {link.description && (
+          <p className="mt-0.5 truncate text-xs text-[var(--ink-secondary)]">
+            {link.description}
+          </p>
+        )}
+      </div>
+
+      {/* environment indicator */}
+      <span
+        className="h-2 w-2 shrink-0 rounded-full"
+        style={{ backgroundColor: env.color }}
+        title={env.label}
+      />
+    </a>
+  );
+}

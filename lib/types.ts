@@ -52,3 +52,4 @@ export type AiImportPayload = {
   }>
 }
 
+export type AiImportBatchPayload = AiImportPayload[]

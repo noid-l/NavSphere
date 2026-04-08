@@ -1,61 +1,83 @@
-import type { CategoryGroup } from '@/lib/types'
+import type { CategoryGroup } from "@/lib/types";
 
-import { LinkCard } from './link-card'
+import { LinkCard } from "./link-card";
+
+const ACCENT_PALETTE = [
+  { main: "#0d9488", soft: "#ecfdf5" },
+  { main: "#6366f1", soft: "#eef2ff" },
+  { main: "#e11d48", soft: "#fff1f2" },
+  { main: "#d97706", soft: "#fffbeb" },
+  { main: "#7c3aed", soft: "#f5f3ff" },
+  { main: "#0284c7", soft: "#e0f2fe" },
+  { main: "#be185d", soft: "#fdf2f8" },
+  { main: "#059669", soft: "#ecfdf5" },
+];
 
 type CategoryListProps = {
-  groups: CategoryGroup[]
-  keyword: string
-}
+  groups: CategoryGroup[];
+  keyword: string;
+};
 
 export function CategoryList({ groups, keyword }: CategoryListProps) {
   if (groups.length === 0) {
     return (
-      <section className="surface-card rounded-[1.75rem] p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--page-muted)]">
-          No Match
-        </p>
-        <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em]">
-          没找到匹配项
-        </h3>
-        <p className="mt-3 text-sm leading-6 text-[var(--page-muted)]">
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-2xl">
+          🔍
+        </div>
+        <h3 className="text-lg font-semibold">没有匹配结果</h3>
+        <p className="mt-2 max-w-sm text-sm text-[var(--ink-secondary)]">
           {keyword
-            ? `当前关键词“${keyword}”没有命中任何导航，试试项目简称、域名或环境名。`
-            : '还没有导航数据。'}
+            ? `"${keyword}" 未命中任何导航。试试项目简称、域名或环境名。`
+            : "暂无导航数据。"}
         </p>
-      </section>
-    )
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-5">
-      {groups.map((group) => (
-        <section key={group.category.id} className="surface-card rounded-[1.75rem] p-5">
-          <div className="flex flex-col gap-2 border-b border-[var(--page-line)] pb-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--page-muted)]">
-                Category
-              </p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                {group.category.name}
-              </h3>
-              {group.category.description ? (
-                <p className="mt-2 text-sm leading-6 text-[var(--page-muted)]">
-                  {group.category.description}
-                </p>
-              ) : null}
-            </div>
-            <div className="rounded-full border border-[var(--page-line)] bg-[var(--page-surface-strong)] px-3 py-1 text-xs font-medium text-[var(--page-muted)]">
-              {group.links.length} 个入口
-            </div>
-          </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {group.links.map((link, index) => (
-              <LinkCard key={link.id} link={link} styleDelay={index * 60} />
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  )
-}
+    <div className="space-y-10">
+      {groups.map((group, groupIndex) => {
+        const accent = ACCENT_PALETTE[groupIndex % ACCENT_PALETTE.length];
 
+        return (
+          <section key={group.category.id}>
+            {/* category header */}
+            <div className="mb-4 flex items-center gap-3">
+              <div
+                className="h-5 w-1 rounded-full"
+                style={{ backgroundColor: accent.main }}
+              />
+              <h2 className="text-[15px] font-bold tracking-tight">
+                {group.category.name}
+              </h2>
+              {group.category.description && (
+                <>
+                  <span className="text-[var(--ink-tertiary)]">·</span>
+                  <span className="text-sm text-[var(--ink-secondary)]">
+                    {group.category.description}
+                  </span>
+                </>
+              )}
+              <span className="ml-auto text-xs tabular-nums text-[var(--ink-tertiary)]">
+                {group.links.length}
+              </span>
+            </div>
+
+            {/* link grid */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {group.links.map((link, index) => (
+                <LinkCard
+                  key={link.id}
+                  link={link}
+                  accent={accent}
+                  styleDelay={index * 40}
+                />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}

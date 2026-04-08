@@ -6,7 +6,7 @@
 
 - 分类分组展示导航
 - 搜索项目名、描述、URL 与分类名
-- Supabase Auth 登录入口
+- GitHub 登录入口（通过 Supabase Auth）
 - Supabase RLS 权限控制
 - `POST /api/ai-import` 支持 AI JSON 直接导入
 - 未配置 Supabase 时自动回落到 Demo 数据
@@ -35,8 +35,7 @@ npm run dev
 
 ## 需要配置的 Supabase 内容
 
-- 开启 Email 登录
-- 可选开启 GitHub OAuth
+- 开启 GitHub OAuth
 - 在 Authentication 的 URL 配置中加入回调地址：`http://localhost:3000/auth/callback`
 - 将项目 URL 和匿名 Key 填入 `.env.local`
 

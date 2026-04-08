@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__zai-mcp-server__analyze_image",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "Bash(curl -s http://localhost:3456)",
+      "Bash(grep -o '\"groups\":\\\\[.\\\\{0,100\\\\}')",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "mcp__plugin_playwright_playwright__browser_type",
+      "mcp__plugin_playwright_playwright__browser_wait_for"
+    ]
+  }
+}

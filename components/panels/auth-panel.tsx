@@ -1,149 +1,81 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import type { Route } from "next";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { createOptionalBrowserSupabaseClient } from '@/lib/supabase/browser'
+import { createOptionalBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 type AuthPanelProps = {
-  initialUserEmail: string | null
-  isConfigured: boolean
-}
+  initialUserEmail: string | null;
+  isConfigured: boolean;
+};
+
+const loginRoute = "/login" as Route;
 
 export function AuthPanel({ initialUserEmail, isConfigured }: AuthPanelProps) {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [message, setMessage] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const supabase = createOptionalBrowserSupabaseClient()
-
-  async function signInWithMagicLink() {
-    if (!supabase || !email.trim()) {
-      return
-    }
-
-    setIsSubmitting(true)
-    setMessage(null)
-
-    const redirectTo = `${window.location.origin}/auth/callback`
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: redirectTo },
-    })
-
-    setMessage(error ? error.message : '登录链接已发送，请检查邮箱。')
-    setIsSubmitting(false)
-  }
-
-  async function signInWithGitHub() {
-    if (!supabase) {
-      return
-    }
-
-    setIsSubmitting(true)
-    setMessage(null)
-
-    const redirectTo = `${window.location.origin}/auth/callback`
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo },
-    })
-
-    if (error) {
-      setMessage(error.message)
-      setIsSubmitting(false)
-    }
-  }
+  const supabase = createOptionalBrowserSupabaseClient();
 
   async function signOut() {
-    if (!supabase) {
-      return
-    }
+    if (!supabase) return;
 
-    setIsSubmitting(true)
-    const { error } = await supabase.auth.signOut()
-    setIsSubmitting(false)
+    setIsSubmitting(true);
+    const { error } = await supabase.auth.signOut();
+    setIsSubmitting(false);
 
     if (error) {
-      setMessage(error.message)
-      return
+      setMessage(error.message);
+      return;
     }
 
-    router.refresh()
+    router.refresh();
   }
 
   return (
-    <div className="rounded-[1.5rem] border border-[var(--page-line)] bg-[rgba(255,255,255,0.72)] p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--page-muted)]">
-            Auth
-          </p>
-          <p className="mt-1 text-lg font-semibold">
-            {initialUserEmail ? '已登录' : '未登录'}
-          </p>
-        </div>
-        <div className="rounded-full bg-[var(--page-brand-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--page-brand)]">
-          {initialUserEmail ? 'Owner Mode' : 'Visitor'}
-        </div>
-      </div>
-
-      {!isConfigured ? (
-        <p className="mt-4 text-sm leading-6 text-[var(--page-muted)]">
-          当前是演示模式。配置 Supabase 后即可开启邮箱登录与 GitHub 登录。
+    <div className="space-y-4">
+      {!isConfigured && (
+        <p className="text-sm text-[var(--ink-secondary)]">
+          当前为演示模式。配置 Supabase 与 GitHub Provider 后可启用登录。
         </p>
-      ) : null}
+      )}
 
       {initialUserEmail ? (
         <>
-          <p className="mt-4 text-sm leading-6 text-[var(--page-muted)]">{initialUserEmail}</p>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[var(--emerald)]" />
+            <span className="text-sm font-medium">{initialUserEmail}</span>
+          </div>
           <button
             type="button"
             onClick={signOut}
             disabled={isSubmitting || !supabase}
-            className="mt-4 inline-flex rounded-full bg-[var(--page-ink)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[rgba(19,34,29,0.86)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex rounded-lg bg-[var(--ink)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             退出登录
           </button>
         </>
       ) : (
         <>
-          <label className="mt-4 block">
-            <span className="mb-2 block text-sm font-medium">邮箱登录</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@company.com"
-              className="w-full rounded-2xl border border-[var(--page-line)] bg-white/85 px-4 py-3 text-sm outline-none transition focus:border-[var(--page-brand)] focus:ring-4 focus:ring-[rgba(15,118,110,0.12)]"
-            />
-          </label>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={signInWithMagicLink}
-              disabled={!isConfigured || isSubmitting || !email.trim()}
-              className="inline-flex rounded-full bg-[var(--page-brand)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[rgba(15,118,110,0.88)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              发送魔法链接
-            </button>
-            <button
-              type="button"
-              onClick={signInWithGitHub}
-              disabled={!isConfigured || isSubmitting}
-              className="inline-flex rounded-full border border-[var(--page-line)] px-4 py-2 text-sm font-medium transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              GitHub 登录
-            </button>
-          </div>
+          <p className="text-sm leading-6 text-[var(--ink-secondary)]">
+            登录入口已经收敛到独立页面，只保留 GitHub 作为唯一登录方式。
+          </p>
+          <Link
+            href={loginRoute}
+            className="inline-flex rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium transition hover:bg-[var(--surface-hover)]"
+          >
+            前往登录页
+          </Link>
         </>
       )}
 
-      {message ? (
-        <p className="mt-4 text-sm leading-6 text-[var(--page-muted)]">{message}</p>
-      ) : null}
+      {message && (
+        <p className="text-sm text-[var(--ink-secondary)]">{message}</p>
+      )}
     </div>
-  )
+  );
 }
-
