@@ -321,19 +321,19 @@ export function AdminCategoriesManager({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[30px] border border-[var(--border)] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-2xl">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-tertiary)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink-tertiary)]">
               Categories
             </div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
               分类管理
             </h2>
             <p className="mt-3 text-sm leading-7 text-[var(--ink-secondary)]">
               分类排序会同步影响前台主内容区与侧边栏顺序；空分类允许存在，但不会在前台显示。分类名里的
               {" "}
-              <code className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-[12px]">
+              <code className="rounded-md bg-[var(--bg)] px-1.5 py-0.5 text-[11px] font-mono">
                 /
               </code>
               {" "}
@@ -431,7 +431,7 @@ export function AdminCategoriesManager({
 
       <section className="space-y-3">
         {filteredCategories.length === 0 ? (
-          <div className="rounded-[30px] border border-[var(--border)] bg-white p-8 text-center text-sm text-[var(--ink-secondary)] shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+          <div className="rounded-2xl border border-[var(--border)] bg-white p-8 text-center text-sm text-[var(--ink-secondary)]">
             当前条件下没有分类。可以先新建一个普通分类，或使用路径式名称创建分组展示。
           </div>
         ) : (
@@ -447,7 +447,7 @@ export function AdminCategoriesManager({
               }}
               onDrop={() => handleDragDrop(item.id)}
               onDragEnd={() => setDraggingId(null)}
-              className={`rounded-[28px] border bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.04)] transition ${
+              className={`rounded-2xl border bg-white p-5 transition ${
                 draggingId === item.id
                   ? "border-[var(--accent)] opacity-70"
                   : "border-[var(--border)]"
@@ -561,13 +561,13 @@ export function AdminCategoriesManager({
 
       {isSheetOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.28)] backdrop-blur-sm">
-          <div className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.16)]">
+          <div className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-tertiary)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink-tertiary)]">
                   Category Form
                 </div>
-                <h3 className="mt-2 text-2xl font-semibold tracking-tight">
+                <h3 className="mt-2 text-xl font-semibold tracking-tight">
                   {editingItem ? "编辑分类" : "新建分类"}
                 </h3>
               </div>

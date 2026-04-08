@@ -402,7 +402,7 @@ export function AdminLinksManager({
 
   if (categoryOptions.length === 0) {
     return (
-      <div className="rounded-[30px] border border-[var(--border)] bg-white p-8 text-sm leading-7 text-[var(--ink-secondary)] shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+      <div className="rounded-2xl border border-[var(--border)] bg-white p-8 text-sm leading-7 text-[var(--ink-secondary)]">
         还没有任何分类。请先去分类管理页创建至少一个分类，再回来录入链接。
       </div>
     );
@@ -410,13 +410,13 @@ export function AdminLinksManager({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[30px] border border-[var(--border)] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-2xl">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-tertiary)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink-tertiary)]">
               Links
             </div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
               链接管理
             </h2>
             <p className="mt-3 text-sm leading-7 text-[var(--ink-secondary)]">
@@ -552,7 +552,7 @@ export function AdminLinksManager({
 
       <section className="space-y-5">
         {groupedLinks.length === 0 ? (
-          <div className="rounded-[30px] border border-[var(--border)] bg-white p-8 text-center text-sm text-[var(--ink-secondary)] shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+          <div className="rounded-2xl border border-[var(--border)] bg-white p-8 text-center text-sm text-[var(--ink-secondary)]">
             当前筛选条件下没有链接。
           </div>
         ) : (
@@ -562,7 +562,7 @@ export function AdminLinksManager({
             return (
               <article
                 key={section.category.id}
-                className="rounded-[30px] border border-[var(--border)] bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.04)]"
+                className="rounded-2xl border border-[var(--border)] bg-white p-5"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
@@ -746,13 +746,13 @@ export function AdminLinksManager({
 
       {isSheetOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.28)] backdrop-blur-sm">
-          <div className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.16)]">
+          <div className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-tertiary)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink-tertiary)]">
                   Link Form
                 </div>
-                <h3 className="mt-2 text-2xl font-semibold tracking-tight">
+                <h3 className="mt-2 text-xl font-semibold tracking-tight">
                   {editingItem ? "编辑链接" : "新建链接"}
                 </h3>
               </div>

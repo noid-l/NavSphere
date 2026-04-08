@@ -1,32 +1,32 @@
 import { DataImportPanel } from "@/components/panels/data-import-panel";
 import { hasSupabaseEnv } from "@/lib/env";
-import { getOptionalCurrentUser } from "@/lib/supabase/auth";
+import { getRequiredCurrentUser } from "@/lib/supabase/auth";
 
 export default async function AdminImportPage() {
-  const user = await getOptionalCurrentUser();
+  const user = await getRequiredCurrentUser();
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[30px] border border-[var(--border)] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-6">
         <div className="max-w-3xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-tertiary)]">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink-tertiary)]">
             Data Import
           </div>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+          <h2 className="mt-2 text-xl font-semibold tracking-tight">
             普通数据导入
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--ink-secondary)]">
             支持粘贴 JSON 或上传
             {" "}
-            <code className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-[12px]">
+            <code className="rounded-md bg-[var(--bg)] px-1.5 py-0.5 text-[11px] font-mono">
               .json
             </code>
             {" "}
-            文件。系统会先做结构校验与预览，再按“当前用户 + 分类名 / 链接名”做幂等写入，避免重复导入造成异常重复数据。
+            文件。系统会先做结构校验与预览，再按"当前用户 + 分类名 / 链接名"做幂等写入，避免重复导入造成异常重复数据。
           </p>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
           {[
             "支持单个分类包或分类数组。",
             "非法 JSON、缺少字段时会给出可读错误。",
@@ -34,7 +34,7 @@ export default async function AdminImportPage() {
           ].map((item) => (
             <div
               key={item}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink-secondary)]"
+              className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-xs leading-5 text-[var(--ink-secondary)]"
             >
               {item}
             </div>
@@ -42,7 +42,7 @@ export default async function AdminImportPage() {
         </div>
       </section>
 
-      <section className="rounded-[30px] border border-[var(--border)] bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-6">
         <DataImportPanel
           initialUserEmail={user?.email ?? null}
           isConfigured={hasSupabaseEnv}

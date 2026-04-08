@@ -37,6 +37,7 @@ export function NavigationShell({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isAdminPending, startAdminTransition] = useTransition();
   const [activeDrawer, setActiveDrawer] = useState<
     "auth" | "import" | null
   >(null);
@@ -95,6 +96,14 @@ export function NavigationShell({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (!initialUserEmail) {
+      return;
+    }
+
+    router.prefetch("/admin");
+  }, [initialUserEmail, router]);
+
   // IntersectionObserver — track which category section is visible
   useEffect(() => {
     if (!hasSidebar) return;
@@ -123,6 +132,16 @@ export function NavigationShell({
   function handleSidebarNavigate(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setMobileSidebar(false);
+  }
+
+  function handleAdminNavigate() {
+    if (isAdminPending) {
+      return;
+    }
+
+    startAdminTransition(() => {
+      router.push("/admin" as Route);
+    });
   }
 
   return (
@@ -193,14 +212,6 @@ export function NavigationShell({
               <>
                 <button
                   type="button"
-                  onClick={() => router.push("/admin" as Route)}
-                  className="hidden h-8 items-center justify-center rounded-lg border border-[var(--border)] px-2.5 text-sm text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)] sm:flex"
-                  title="进入后台"
-                >
-                  后台
-                </button>
-                <button
-                  type="button"
                   onClick={() => setActiveDrawer("import")}
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
                   title="导入数据"
@@ -219,6 +230,19 @@ export function NavigationShell({
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAdminNavigate}
+                  disabled={isAdminPending}
+                  aria-busy={isAdminPending}
+                  className="hidden h-8 items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 text-sm text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)] disabled:cursor-wait disabled:opacity-80 sm:flex"
+                  title="进入后台"
+                >
+                  {isAdminPending && (
+                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" />
+                  )}
+                  {isAdminPending ? "进入中..." : "后台"}
                 </button>
               </>
             )}
