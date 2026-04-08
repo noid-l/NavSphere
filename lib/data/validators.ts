@@ -1,4 +1,4 @@
-import type { AiImportBatchPayload, AiImportPayload, LinkEnv } from '@/lib/types'
+import type { DataImportBatchPayload, DataImportPayload, LinkEnv } from '@/lib/types'
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -8,7 +8,7 @@ function isLinkEnv(value: unknown): value is LinkEnv {
   return value === 'test' || value === 'prod'
 }
 
-export function isAiImportPayload(value: unknown): value is AiImportPayload {
+export function isDataImportPayload(value: unknown): value is DataImportPayload {
   if (!isPlainObject(value)) {
     return false
   }
@@ -17,7 +17,7 @@ export function isAiImportPayload(value: unknown): value is AiImportPayload {
     return false
   }
 
-  if (!Array.isArray(value.links) || value.links.length === 0) {
+  if (!Array.isArray(value.links)) {
     return false
   }
 
@@ -38,6 +38,9 @@ export function isAiImportPayload(value: unknown): value is AiImportPayload {
   })
 }
 
-export function isAiImportBatchPayload(value: unknown): value is AiImportBatchPayload {
-  return Array.isArray(value) && value.length > 0 && value.every(isAiImportPayload)
+export function isDataImportBatchPayload(value: unknown): value is DataImportBatchPayload {
+  return Array.isArray(value) && value.length > 0 && value.every(isDataImportPayload)
 }
+
+export const isAiImportPayload = isDataImportPayload
+export const isAiImportBatchPayload = isDataImportBatchPayload

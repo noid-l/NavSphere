@@ -3,10 +3,10 @@
 import { useCallback, useRef, useState } from "react";
 
 import {
-  isAiImportBatchPayload,
-  isAiImportPayload,
+  isDataImportBatchPayload,
+  isDataImportPayload,
 } from "@/lib/data/validators";
-import type { AiImportPayload } from "@/lib/types";
+import type { DataImportPayload } from "@/lib/types";
 
 type DataImportPanelProps = {
   initialUserEmail: string | null;
@@ -19,7 +19,7 @@ type ImportResult = {
 };
 
 type ParsedPreview = {
-  items: AiImportPayload[];
+  items: DataImportPayload[];
   categoryNames: string[];
   totalLinks: number;
 };
@@ -62,9 +62,9 @@ export function DataImportPanel({
       return;
     }
 
-    const items = isAiImportPayload(parsed)
+    const items = isDataImportPayload(parsed)
       ? [parsed]
-      : isAiImportBatchPayload(parsed)
+      : isDataImportBatchPayload(parsed)
         ? parsed
         : null;
 
@@ -117,7 +117,7 @@ export function DataImportPanel({
       const payload =
         preview.items.length === 1 ? preview.items[0] : preview.items;
 
-      const res = await fetch("/api/ai-import", {
+      const res = await fetch("/api/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

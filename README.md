@@ -1,6 +1,6 @@
 # NavSphere
 
-基于 `Next.js + Supabase` 的开发者项目导航站初始化模板，目标是把项目入口、开发工具链接和 AI 工具入口统一整理到一个支持搜索、分类、鉴权和 AI 导入的界面里。
+基于 `Next.js + Supabase` 的开发者项目导航站初始化模板，目标是把项目入口、开发工具链接和常用站点入口统一整理到一个支持搜索、分类、鉴权、数据导入和用户自管后台的界面里。
 
 ## 当前能力
 
@@ -8,7 +8,8 @@
 - 搜索项目名、描述、URL 与分类名
 - GitHub 登录入口（通过 Supabase Auth）
 - Supabase RLS 权限控制
-- `POST /api/ai-import` 支持 AI JSON 直接导入
+- `/admin` 用户自管后台，支持分类管理、链接管理、数据导入
+- `POST /api/import` 支持普通 JSON 数据导入
 - 数据来源仅限 Supabase，未配置或查询失败时直接报错
 
 ## 快速开始
@@ -39,9 +40,9 @@ npm run dev
 - 在 Authentication 的 URL 配置中加入回调地址：`http://localhost:3000/auth/callback`
 - 将项目 URL 和匿名 Key 填入 `.env.local`
 
-## AI 导入格式
+## 数据导入格式
 
-示例见 [`data/ai-import.example.json`](./data/ai-import.example.json)。
+示例见 [`data/data-import.example.json`](./data/data-import.example.json)。
 
 ```json
 {

@@ -1,74 +1,10 @@
 import { NextResponse } from 'next/server'
 
-import { isAiImportBatchPayload, isAiImportPayload } from '@/lib/data/validators'
+import { importDataItems, parseDataImportItems } from '@/lib/data/import-service'
 import { hasSupabaseEnv } from '@/lib/env'
 import { createRouteHandlerSupabaseClient } from '@/lib/supabase/route-handler'
-import type { AiImportPayload } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
-
-async function importCategory(
-  supabase: Awaited<ReturnType<typeof createRouteHandlerSupabaseClient>>,
-  userId: string,
-  payload: AiImportPayload,
-) {
-  const normalizedCategory = {
-    name: payload.category.name.trim(),
-    description: payload.category.description?.trim() || null,
-    sort: payload.category.sort ?? 100,
-    is_public: payload.category.is_public ?? false,
-    created_by: userId,
-  }
-
-  const { data: category, error: categoryError } = await supabase
-    .from('categories')
-    .upsert(normalizedCategory, {
-      onConflict: 'created_by,name',
-    })
-    .select('id, name')
-    .single()
-
-  if (categoryError || !category) {
-    return {
-      error: categoryError?.message ?? '分类创建失败。',
-    }
-  }
-
-  const seen = new Map<string, number>()
-
-  payload.links.forEach((link, index) => {
-    seen.set(link.name.trim(), index)
-  })
-
-  const rows = [...seen.values()].map((index) => ({
-    name: payload.links[index].name.trim(),
-    url: payload.links[index].url.trim(),
-    env: payload.links[index].env ?? 'prod',
-    description: payload.links[index].description?.trim() || null,
-    icon: payload.links[index].icon?.trim() || null,
-    sort: payload.links[index].sort ?? (index + 1) * 10,
-    is_public: payload.links[index].is_public ?? false,
-    category_id: category.id,
-    created_by: userId,
-  }))
-
-  const { data: links, error: linksError } = await supabase
-    .from('links')
-    .upsert(rows, {
-      onConflict: 'created_by,category_id,name',
-    })
-    .select('id, name, url, env')
-
-  if (linksError) {
-    return { error: linksError.message }
-  }
-
-  return {
-    category,
-    insertedCount: links?.length ?? 0,
-    links: links ?? [],
-  }
-}
 
 export async function POST(request: Request) {
   if (!hasSupabaseEnv) {
@@ -79,12 +15,7 @@ export async function POST(request: Request) {
   }
 
   const payload = await request.json().catch(() => null)
-
-  const items = isAiImportPayload(payload)
-    ? [payload]
-    : isAiImportBatchPayload(payload)
-      ? payload
-      : null
+  const items = parseDataImportItems(payload)
 
   if (!items) {
     return NextResponse.json(
@@ -102,23 +33,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '请先登录后再导入导航数据。' }, { status: 401 })
   }
 
-  const results = []
+  const result = await importDataItems(supabase, user.id, items)
 
-  for (const item of items) {
-    const result = await importCategory(supabase, user.id, item)
-    if ('error' in result) {
-      return NextResponse.json(
-        {
-          error: `分类"${item.category.name}"导入失败：${result.error}`,
-          importedCategories: results.map((entry) => entry.category.name),
-          insertedCount: results.reduce((total, entry) => total + entry.insertedCount, 0),
-        },
-        { status: 500 },
-      )
-    }
-
-    results.push(result)
+  if ('error' in result) {
+    return NextResponse.json(
+      {
+        error: result.error,
+        importedCategories: result.results.map((entry) => entry.category.name),
+        insertedCount: result.results.reduce((total, entry) => total + entry.insertedCount, 0),
+      },
+      { status: 500 },
+    )
   }
+
+  const { results } = result
 
   return NextResponse.json({
     category: results[0]?.category ?? null,

@@ -34,7 +34,7 @@ export type NavigationSnapshot = {
   errorMessage?: string
 }
 
-export type AiImportPayload = {
+export type DataImportPayload = {
   category: {
     name: string
     description?: string | null
@@ -52,4 +52,46 @@ export type AiImportPayload = {
   }>
 }
 
-export type AiImportBatchPayload = AiImportPayload[]
+export type DataImportBatchPayload = DataImportPayload[]
+
+export type AiImportPayload = DataImportPayload
+export type AiImportBatchPayload = DataImportBatchPayload
+
+export type AdminOverviewStats = {
+  totalCategories: number
+  totalLinks: number
+  emptyCategories: number
+  privateLinks: number
+  recentUpdatedAt: string | null
+}
+
+export type AdminCategoryItem = {
+  id: string
+  name: string
+  description: string | null
+  sort: number
+  isPublic: boolean
+  updatedAt: string
+  linkCount: number
+  isEmpty: boolean
+}
+
+export type AdminCategoryOption = {
+  id: string
+  name: string
+  sort: number
+}
+
+export type AdminLinkItem = {
+  id: string
+  name: string
+  url: string
+  env: LinkEnv
+  description: string | null
+  icon: string | null
+  sort: number
+  isPublic: boolean
+  updatedAt: string
+  categoryId: string
+  categoryName: string
+}
