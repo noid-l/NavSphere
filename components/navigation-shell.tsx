@@ -13,7 +13,6 @@ import {
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import type { NavigationSnapshot } from "@/lib/types";
 
-import { DataImportPanel } from "./panels/data-import-panel";
 import { AuthPanel } from "./panels/auth-panel";
 import { SearchBar } from "./search-bar";
 import { CategorySidebar } from "./sections/category-sidebar";
@@ -38,9 +37,7 @@ export function NavigationShell({
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isAdminPending, startAdminTransition] = useTransition();
-  const [activeDrawer, setActiveDrawer] = useState<
-    "auth" | "import" | null
-  >(null);
+  const [activeDrawer, setActiveDrawer] = useState<"auth" | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
     null,
   );
@@ -207,30 +204,8 @@ export function NavigationShell({
               链接
             </span>
 
-            {/* import — only shown for logged-in users */}
             {initialUserEmail && (
               <>
-                <button
-                  type="button"
-                  onClick={() => setActiveDrawer("import")}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--ink-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
-                  title="导入数据"
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </button>
                 <button
                   type="button"
                   onClick={handleAdminNavigate}
@@ -355,9 +330,7 @@ export function NavigationShell({
           {/* panel */}
           <div className="slide-in-right fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
-              <h2 className="text-sm font-semibold">
-                {activeDrawer === "auth" ? "账户" : "导入数据"}
-              </h2>
+              <h2 className="text-sm font-semibold">账户</h2>
               <button
                 type="button"
                 onClick={() => setActiveDrawer(null)}
@@ -379,17 +352,10 @@ export function NavigationShell({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-5">
-              {activeDrawer === "auth" ? (
-                <AuthPanel
-                  initialUserEmail={initialUserEmail}
-                  isConfigured={snapshot.isConfigured}
-                />
-              ) : (
-                <DataImportPanel
-                  initialUserEmail={initialUserEmail}
-                  isConfigured={snapshot.isConfigured}
-                />
-              )}
+              <AuthPanel
+                initialUserEmail={initialUserEmail}
+                isConfigured={snapshot.isConfigured}
+              />
             </div>
           </div>
         </>

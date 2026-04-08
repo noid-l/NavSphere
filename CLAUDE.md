@@ -35,7 +35,6 @@ No test framework is configured. There is a `pnpm bookmarks:export` script for C
 - `admin/categories/` and `admin/links/` — CRUD operations with RLS-enforced ownership (`created_by = auth.uid()`)
 - `admin/categories/reorder` and `admin/links/reorder` — Batch reorder endpoints
 - `import/` — JSON data import (idempotent by user + category name + link name)
-- `ai-import/` — AI-powered import (placeholder)
 
 ### Database
 

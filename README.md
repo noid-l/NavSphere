@@ -30,8 +30,7 @@ app/
   page.tsx                 前台导航首页
   login/                   GitHub 登录页
   admin/                   后台页面
-  api/import/              导入接口别名
-  api/ai-import/           实际导入接口
+  api/import/              普通数据导入接口
 components/                前台与后台 UI 组件
 lib/data/                  导航查询、后台数据访问、导入逻辑
 lib/supabase/              Supabase 客户端封装
@@ -111,7 +110,6 @@ npm run dev
 示例文件：
 
 - [`data/data-import.example.json`](./data/data-import.example.json)
-- [`data/ai-import.example.json`](./data/ai-import.example.json)
 
 单个分类示例：
 
@@ -135,9 +133,8 @@ npm run dev
 接口说明：
 
 - `POST /api/import`
-- `POST /api/ai-import`
 
-这两个入口当前指向同一套导入逻辑，都会将数据 upsert 到当前登录用户的数据空间中。
+接口会将数据 upsert 到当前登录用户的数据空间中。
 
 ### 分类命名约定
 
