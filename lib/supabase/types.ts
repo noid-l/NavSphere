@@ -40,7 +40,15 @@ export type Database = {
           sort?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'categories_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
       }
       links: {
         Row: {
@@ -87,6 +95,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: 'links_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'links_category_id_fkey'
             columns: ['category_id']
             isOneToOne: false
@@ -104,4 +119,3 @@ export type Database = {
     CompositeTypes: Record<string, never>
   }
 }
-

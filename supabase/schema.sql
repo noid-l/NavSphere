@@ -53,6 +53,9 @@ create index if not exists categories_public_sort_idx
 create index if not exists links_owner_category_sort_idx
   on public.links (created_by, category_id, sort, created_at desc);
 
+create index if not exists links_category_id_idx
+  on public.links (category_id);
+
 create index if not exists links_public_sort_idx
   on public.links (is_public, sort)
   where is_public = true;
@@ -79,38 +82,60 @@ alter table public.categories enable row level security;
 alter table public.links enable row level security;
 
 drop policy if exists "categories_select_visible" on public.categories;
-create policy "categories_select_visible"
+drop policy if exists "categories_select_own" on public.categories;
+drop policy if exists "categories_select_public" on public.categories;
+drop policy if exists "categories_select_public_anon" on public.categories;
+create policy "categories_select_public_anon"
 on public.categories
 for select
-using (is_public = true or created_by = auth.uid());
+to anon
+using (is_public = true);
+
+drop policy if exists "categories_select_visible_authenticated" on public.categories;
+create policy "categories_select_visible_authenticated"
+on public.categories
+for select
+to authenticated
+using (is_public = true or created_by = (select auth.uid()));
 
 drop policy if exists "categories_insert_own" on public.categories;
 create policy "categories_insert_own"
 on public.categories
 for insert
 to authenticated
-with check (created_by = auth.uid());
+with check (created_by = (select auth.uid()));
 
 drop policy if exists "categories_update_own" on public.categories;
 create policy "categories_update_own"
 on public.categories
 for update
 to authenticated
-using (created_by = auth.uid())
-with check (created_by = auth.uid());
+using (created_by = (select auth.uid()))
+with check (created_by = (select auth.uid()));
 
 drop policy if exists "categories_delete_own" on public.categories;
 create policy "categories_delete_own"
 on public.categories
 for delete
 to authenticated
-using (created_by = auth.uid());
+using (created_by = (select auth.uid()));
 
 drop policy if exists "links_select_visible" on public.links;
-create policy "links_select_visible"
+drop policy if exists "links_select_own" on public.links;
+drop policy if exists "links_select_public" on public.links;
+drop policy if exists "links_select_public_anon" on public.links;
+create policy "links_select_public_anon"
 on public.links
 for select
-using (is_public = true or created_by = auth.uid());
+to anon
+using (is_public = true);
+
+drop policy if exists "links_select_visible_authenticated" on public.links;
+create policy "links_select_visible_authenticated"
+on public.links
+for select
+to authenticated
+using (is_public = true or created_by = (select auth.uid()));
 
 drop policy if exists "links_insert_own" on public.links;
 create policy "links_insert_own"
@@ -118,12 +143,12 @@ on public.links
 for insert
 to authenticated
 with check (
-  created_by = auth.uid()
+  created_by = (select auth.uid())
   and exists (
     select 1
     from public.categories
     where categories.id = category_id
-      and categories.created_by = auth.uid()
+      and categories.created_by = (select auth.uid())
   )
 );
 
@@ -132,14 +157,14 @@ create policy "links_update_own"
 on public.links
 for update
 to authenticated
-using (created_by = auth.uid())
+using (created_by = (select auth.uid()))
 with check (
-  created_by = auth.uid()
+  created_by = (select auth.uid())
   and exists (
     select 1
     from public.categories
     where categories.id = category_id
-      and categories.created_by = auth.uid()
+      and categories.created_by = (select auth.uid())
   )
 );
 
@@ -148,4 +173,4 @@ create policy "links_delete_own"
 on public.links
 for delete
 to authenticated
-using (created_by = auth.uid());
+using (created_by = (select auth.uid()));

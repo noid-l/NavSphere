@@ -1,12 +1,10 @@
 import type { CategoryGroup } from "@/lib/types";
 
-type TreeNode =
-  | { type: "parent"; label: string; children: SidebarItem[] }
-  | { type: "leaf"; label: string; id: string };
-
-type SidebarItem = {
+type TreeNode = {
+  key: string;
   label: string;
-  id: string;
+  id: string | null;
+  children: TreeNode[];
 };
 
 type CategorySidebarProps = {
@@ -16,38 +14,138 @@ type CategorySidebarProps = {
   className?: string;
 };
 
+type MutableTreeNode = TreeNode & {
+  childMap: Map<string, MutableTreeNode>;
+};
+
+function splitCategoryPath(name: string) {
+  const parts = name
+    .split(/\s*\/\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return parts.length > 0 ? parts : [name.trim()];
+}
+
 function buildTree(groups: CategoryGroup[]): TreeNode[] {
-  const root: TreeNode[] = [];
-  const parentMap = new Map<string, SidebarItem[]>();
+  const root: MutableTreeNode[] = [];
+  const rootMap = new Map<string, MutableTreeNode>();
 
   for (const group of groups) {
-    const name = group.category.name;
-    const parts = name.split(/\s*\/\s*/).map((s) => s.trim());
+    const parts = splitCategoryPath(group.category.name);
+    let currentPath = "";
+    let siblings = root;
+    let siblingMap = rootMap;
 
-    if (parts.length < 2) {
-      root.push({ type: "leaf", label: name, id: group.category.id });
-      continue;
+    for (const [index, part] of parts.entries()) {
+      currentPath = currentPath ? `${currentPath} / ${part}` : part;
+
+      let node = siblingMap.get(currentPath);
+
+      if (!node) {
+        node = {
+          key: currentPath,
+          label: part,
+          id: null,
+          children: [],
+          childMap: new Map<string, MutableTreeNode>(),
+        };
+        siblingMap.set(currentPath, node);
+        siblings.push(node);
+      }
+
+      if (index === parts.length - 1) {
+        node.id = group.category.id;
+      }
+
+      siblings = node.children as MutableTreeNode[];
+      siblingMap = node.childMap;
     }
-
-    const parentLabel = parts[0];
-    const childLabel = parts.slice(1).join(" / ");
-
-    if (!parentMap.has(parentLabel)) {
-      parentMap.set(parentLabel, []);
-      root.push({
-        type: "parent",
-        label: parentLabel,
-        children: parentMap.get(parentLabel)!,
-      });
-    }
-
-    parentMap.get(parentLabel)!.push({
-      label: childLabel,
-      id: group.category.id,
-    });
   }
 
-  return root;
+  function normalize(nodes: MutableTreeNode[]): TreeNode[] {
+    return nodes.map(({ childMap: _childMap, children, ...node }) => ({
+      ...node,
+      children: normalize(children as MutableTreeNode[]),
+    }));
+  }
+
+  return normalize(root);
+}
+
+function hasActiveNode(node: TreeNode, activeId: string | null): boolean {
+  if (!activeId) {
+    return false;
+  }
+
+  if (node.id === activeId) {
+    return true;
+  }
+
+  return node.children.some((child) => hasActiveNode(child, activeId));
+}
+
+type SidebarNodeProps = {
+  node: TreeNode;
+  activeId: string | null;
+  depth: number;
+  onNavigate: (id: string) => void;
+};
+
+function SidebarNode({
+  node,
+  activeId,
+  depth,
+  onNavigate,
+}: SidebarNodeProps) {
+  const isActive = node.id === activeId;
+  const isBranchActive = !isActive && hasActiveNode(node, activeId);
+  const itemClassName = [
+    "cat-sidebar-item",
+    isActive ? "cat-sidebar-item--active" : "",
+    isBranchActive ? "cat-sidebar-item--branch-active" : "",
+    node.id ? "" : "cat-sidebar-item--label",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const itemStyle = {
+    paddingLeft: `${12 + depth * 16}px`,
+  };
+
+  return (
+    <div className="cat-sidebar-group">
+      {node.id ? (
+        <button
+          type="button"
+          onClick={() => onNavigate(node.id!)}
+          className={itemClassName}
+          style={itemStyle}
+        >
+          <span className="cat-sidebar-dot" />
+          <span className="truncate">{node.label}</span>
+        </button>
+      ) : (
+        <div className={itemClassName} style={itemStyle}>
+          <span className="cat-sidebar-dot" />
+          <span className="truncate">{node.label}</span>
+        </div>
+      )}
+
+      {node.children.length > 0 && (
+        <div className="cat-sidebar-group-children">
+          {node.children.map((child) => (
+            <SidebarNode
+              key={child.key}
+              node={child}
+              activeId={activeId}
+              depth={depth + 1}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function CategorySidebar({
@@ -60,40 +158,15 @@ export function CategorySidebar({
 
   return (
     <nav className={`cat-sidebar ${className}`} aria-label="分类导航">
-      {tree.map((node) => {
-        if (node.type === "leaf") {
-          return (
-            <button
-              key={node.id}
-              type="button"
-              onClick={() => onNavigate(node.id)}
-              className={`cat-sidebar-item cat-sidebar-leaf ${activeId === node.id ? "cat-sidebar-item--active" : ""}`}
-            >
-              <span className="cat-sidebar-dot" />
-              <span className="truncate">{node.label}</span>
-            </button>
-          );
-        }
-
-        return (
-          <div key={node.label} className="cat-sidebar-group">
-            <div className="cat-sidebar-group-label">{node.label}</div>
-            <div className="cat-sidebar-group-children">
-              {node.children.map((child) => (
-                <button
-                  key={child.id}
-                  type="button"
-                  onClick={() => onNavigate(child.id)}
-                  className={`cat-sidebar-item ${activeId === child.id ? "cat-sidebar-item--active" : ""}`}
-                >
-                  <span className="cat-sidebar-dot" />
-                  <span className="truncate">{child.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      {tree.map((node) => (
+        <SidebarNode
+          key={node.key}
+          node={node}
+          activeId={activeId}
+          depth={0}
+          onNavigate={onNavigate}
+        />
+      ))}
     </nav>
   );
 }

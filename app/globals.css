@@ -651,15 +651,6 @@ header .admin-nav-link.admin-nav-active span:first-child {
   flex-direction: column;
 }
 
-.cat-sidebar-group-label {
-  padding: 8px 12px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ink-tertiary);
-}
-
 .cat-sidebar-group-children {
   display: flex;
   flex-direction: column;
@@ -693,13 +684,34 @@ header .admin-nav-link.admin-nav-active span:first-child {
   font-weight: 600;
 }
 
+.cat-sidebar-item--branch-active {
+  color: var(--ink);
+}
+
+.cat-sidebar-item--branch-active .cat-sidebar-dot {
+  background: var(--accent);
+  opacity: 0.55;
+}
+
 .cat-sidebar-item--active .cat-sidebar-dot {
   background: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.cat-sidebar-leaf {
-  padding-left: 12px;
+.cat-sidebar-item--label {
+  cursor: default;
+  color: var(--ink-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.cat-sidebar-item--label:hover {
+  background: transparent;
+  color: var(--ink-tertiary);
+}
+
+.cat-sidebar-item--label:hover .cat-sidebar-dot {
+  background: var(--border-hover);
 }
 
 .cat-sidebar-dot {
