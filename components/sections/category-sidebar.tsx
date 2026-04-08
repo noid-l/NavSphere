@@ -85,6 +85,22 @@ function hasActiveNode(node: TreeNode, activeId: string | null): boolean {
   return node.children.some((child) => hasActiveNode(child, activeId));
 }
 
+function getNavigableId(node: TreeNode): string | null {
+  if (node.id) {
+    return node.id;
+  }
+
+  for (const child of node.children) {
+    const childNavigableId = getNavigableId(child);
+
+    if (childNavigableId) {
+      return childNavigableId;
+    }
+  }
+
+  return null;
+}
+
 type SidebarNodeProps = {
   node: TreeNode;
   activeId: string | null;
@@ -100,11 +116,12 @@ function SidebarNode({
 }: SidebarNodeProps) {
   const isActive = node.id === activeId;
   const isBranchActive = !isActive && hasActiveNode(node, activeId);
+  const navigableId = getNavigableId(node);
   const itemClassName = [
     "cat-sidebar-item",
     isActive ? "cat-sidebar-item--active" : "",
     isBranchActive ? "cat-sidebar-item--branch-active" : "",
-    node.id ? "" : "cat-sidebar-item--label",
+    navigableId ? "" : "cat-sidebar-item--label",
   ]
     .filter(Boolean)
     .join(" ");
@@ -114,10 +131,10 @@ function SidebarNode({
 
   return (
     <div className="cat-sidebar-group">
-      {node.id ? (
+      {navigableId ? (
         <button
           type="button"
-          onClick={() => onNavigate(node.id!)}
+          onClick={() => onNavigate(navigableId)}
           className={itemClassName}
           style={itemStyle}
         >
